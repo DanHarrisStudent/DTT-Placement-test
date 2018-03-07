@@ -11,6 +11,7 @@ public class MazeGen : MonoBehaviour
     public float m_MazeSize = 1.0f;//Length of the cube z axis
 
     private Vector3 m_StartPosition;
+    private GameObject WallHolder;
     
 
     void Start()
@@ -19,6 +20,9 @@ public class MazeGen : MonoBehaviour
     }
     private void GenMaze()
     {
+        WallHolder = new GameObject();
+        WallHolder.name = "Grid";
+
         m_StartPosition = new Vector3((-m_WallX / 2) + m_MazeSize / 2, 0.0f, (-m_WallY / 2) + m_MazeSize / 2);
         Vector3 m_CellPos = m_StartPosition;
         GameObject tempWall;
@@ -29,7 +33,8 @@ public class MazeGen : MonoBehaviour
             for (int j = 0; j <= m_WallX; j++)//for each column(y Axis)
             {
                 m_CellPos = new Vector3(m_StartPosition.x + (j * m_MazeSize) - m_MazeSize / 2, 0.0f, m_StartPosition.z + (i * m_MazeSize) - m_MazeSize / 2);
-                Instantiate(Wall,m_CellPos,Quaternion.identity);//Spawn game object
+                tempWall = Instantiate(Wall,m_CellPos,Quaternion.identity) as GameObject;//Spawn game object
+                tempWall.transform.parent = WallHolder.transform;
             }
         }
         //Walls for Y Axis
@@ -39,6 +44,7 @@ public class MazeGen : MonoBehaviour
             {
                 m_CellPos = new Vector3(m_StartPosition.x + (j * m_MazeSize), 0.0f, m_StartPosition.z + (i * m_MazeSize) - m_MazeSize);
                 tempWall = Instantiate(Wall, m_CellPos, Quaternion.Euler(0.0f, 90.0f, 0.0f)) as GameObject;//Spawn wall as a new game object
+                tempWall.transform.parent = WallHolder.transform;
             }
         }
     }
