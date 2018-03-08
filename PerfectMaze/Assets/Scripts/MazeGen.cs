@@ -4,7 +4,16 @@ using UnityEngine;
 
 public class MazeGen : MonoBehaviour
 {
-    
+    [System.Serializable]//Allow the class to be seen in the editor
+    public class Cells
+    {
+        public bool m_isVisited = false;
+        public GameObject m_North;
+        public GameObject m_East;
+        public GameObject m_West;
+        public GameObject m_South;
+    }
+
     //Variables for the Generation script
     public GameObject Wall;
     public GameObject Floor;
@@ -14,7 +23,7 @@ public class MazeGen : MonoBehaviour
 
     private Vector3 m_StartPosition;
     private GameObject WallHolder;//Creates a parent object to hold walls
-    private MazeCell[] m_Cells;//refernce to the MazeCell class
+    private Cells[] m_Cells;//refernce to the MazeCell class
 
     void Start()
     {
@@ -36,7 +45,7 @@ public class MazeGen : MonoBehaviour
             for (int j = 0; j <= m_WallX; j++)//for each column(y Axis)
             {
                 m_CellPos = new Vector3(m_StartPosition.x + (j * m_WallLength) - m_WallLength / 2, 0.0f, m_StartPosition.z + (i * m_WallLength) - m_WallLength / 2);
-                tempWall = Instantiate(Wall,m_CellPos,Quaternion.identity) as GameObject;//Spawn game object
+                tempWall = Instantiate(Wall, m_CellPos, Quaternion.identity) as GameObject;//Spawn game object
                 tempWall.transform.parent = WallHolder.transform;
             }
         }
@@ -55,14 +64,38 @@ public class MazeGen : MonoBehaviour
 
     void InitialiseCells()
     {
-        GameObject[] allWalls;//Array of walls within the maze
-        int m_wallChildren = WallHolder.transform.childCount;//Counts the number of child objects within WallHolder 
+        GameObject[] mazeWalls;//Array of walls within the maze.
+        int m_wallChildren = WallHolder.transform.childCount;//Counts the number of child objects within WallHolder.
+        mazeWalls = new GameObject[m_wallChildren];//Assigning Gameobject mazeWall the length of wallChildren.
+        m_Cells = new Cells[m_WallX * m_WallY];//Provides a number of cells within the maze.
+        int m_CellProcess = 0;
+        int m_HorizontalWalls = 0;//Horizontal wall counter
+        int m_CellCount = 0;
 
         //Finds all children within Holder
         for (int i = 0; i < m_wallChildren; i++)
         {
+            mazeWalls[i] = WallHolder.transform.GetChild(i).gameObject;
+        }
 
-            allWalls[i] = WallHolder.transform.GetChild(i).gameObject;
+        //Place walls into cells
+        for (int i = 0; i < m_Cells.Length; i++)
+        {
+            m_Cells[i] = new Cells();//Sets each cell within the maze to a new cell with each wall GameObject.
+            m_Cells[i].m_East = mazeWalls[m_CellProcess];//Assign each west wall to the cell
+            m_Cells[i].m_South = mazeWalls[m_HorizontalWalls + (m_WallX + 1) * m_WallY];//Gets the first south facing wall after all vertical walls.
+
+            if (m_CellCount == m_WallX)//last element on the Xaxis
+            {
+                m_CellProcess += 2;//Skip a cell to make the edge wall 
+                m_CellCount = 0;
+            }
+            m_CellCount++;
+            m_HorizontalWalls++;
+
+            m_Cells[i].m_West = mazeWalls[m_CellProcess];//Assigns west wall
+            m_Cells[i].m_North = mazeWalls[(m_HorizontalWalls + (m_WallX + 1) * m_WallY) + m_WallX - 1];//Assigns north wall
+
         }
     }
 

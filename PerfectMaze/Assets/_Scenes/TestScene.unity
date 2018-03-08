@@ -207,8 +207,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Wall: {fileID: 1081094918920036, guid: 2b9e76a3fc39aa3458f2a460da00ddd6, type: 2}
   Floor: {fileID: 1004935019426216, guid: b82e0910642da374599eb7d623297eef, type: 2}
-  m_WallX: 10
-  m_WallY: 10
+  m_WallX: 2
+  m_WallY: 2
   m_WallLength: 1
 --- !u!4 &585463011
 Transform:
