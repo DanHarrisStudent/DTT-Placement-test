@@ -14,7 +14,7 @@ public class MazeGen : MonoBehaviour
 
     private Vector3 m_StartPosition;
     private GameObject WallHolder;//Creates a parent object to hold walls
-    
+    private MazeCell[] m_Cells;//refernce to the MazeCell class
 
     void Start()
     {
@@ -55,7 +55,15 @@ public class MazeGen : MonoBehaviour
 
     void InitialiseCells()
     {
+        GameObject[] allWalls;//Array of walls within the maze
+        int m_wallChildren = WallHolder.transform.childCount;//Counts the number of child objects within WallHolder 
 
+        //Finds all children within Holder
+        for (int i = 0; i < m_wallChildren; i++)
+        {
+
+            allWalls[i] = WallHolder.transform.GetChild(i).gameObject;
+        }
     }
 
 }
