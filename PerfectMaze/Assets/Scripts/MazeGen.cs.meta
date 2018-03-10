@@ -6,7 +6,8 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - wall: {fileID: 1081094918920036, guid: 2b9e76a3fc39aa3458f2a460da00ddd6, type: 2}
+  - Wall: {fileID: 1081094918920036, guid: 2b9e76a3fc39aa3458f2a460da00ddd6, type: 2}
+  - Floor: {fileID: 1004935019426216, guid: b82e0910642da374599eb7d623297eef, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

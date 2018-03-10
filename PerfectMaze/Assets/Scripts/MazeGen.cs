@@ -20,10 +20,12 @@ public class MazeGen : MonoBehaviour
     public int m_WallX = 5;
     public int m_WallY = 5;
     public float m_WallLength = 1.0f;//Length of the cube z axis
+    public int m_CurrentCell = 0;
 
     private Vector3 m_StartPosition;
     private GameObject WallHolder;//Creates a parent object to hold walls
     private Cells[] m_Cells;//refernce to the MazeCell class
+    private int m_TotalCells;
 
     void Start()
     {
@@ -97,6 +99,70 @@ public class MazeGen : MonoBehaviour
             m_Cells[i].m_North = mazeWalls[(m_HorizontalWalls + (m_WallX + 1) * m_WallY) + m_WallX - 1];//Assigns north wall
 
         }
+        InstatiateMaze();
+    }
+
+    void InstatiateMaze()
+    {
+        FindCell();
+    }
+    void FindCell()
+    {
+        m_TotalCells = m_WallX * m_WallY;
+        int m_foundNeighbour = 0;
+        int[] m_Neighbours = new int[4];//Cell only has 4 directions (N,E,S,W).
+        int m_Check = 0;
+        m_Check = ((m_CurrentCell + 1) / m_WallX);//Checking if the cell is in a corner
+        m_Check -= 1;
+        m_Check *= m_WallX;
+        m_Check += m_WallX;
+
+        //If Cell is on the west
+        if (m_CurrentCell + 1 < m_TotalCells && (m_CurrentCell+1) != m_Check)
+        {
+            if(m_Cells[m_CurrentCell +1].m_isVisited == false)//Checking if the cell has not been visited 
+            {
+                m_Neighbours[m_foundNeighbour] = m_CurrentCell + 1; //Increase the total of visited cells
+
+                m_foundNeighbour++;
+            }
+        }
+        //East Side
+        if (m_CurrentCell - 1 >= 0 && m_CurrentCell != m_Check)
+        {
+            if (m_Cells[m_CurrentCell - 1].m_isVisited == false)//Checking if the cell has not been visited 
+            {
+                m_Neighbours[m_foundNeighbour] = m_CurrentCell - 1; //Increase the total of visited cells
+
+                m_foundNeighbour++;
+            }
+        }
+        //North side
+        if (m_CurrentCell + m_WallX < m_TotalCells)
+        {
+            if (m_Cells[m_CurrentCell + m_WallX].m_isVisited == false)//Checking if the cell has not been visited 
+            {
+                m_Neighbours[m_foundNeighbour] = m_CurrentCell + m_WallX; //Increase the total of visited cells
+
+                m_foundNeighbour++;
+            }
+        }
+
+        if (m_CurrentCell - m_WallX >= 0)
+        {
+            if (m_Cells[m_CurrentCell - m_WallX].m_isVisited == false)//Checking if the cell has not been visited 
+            {
+                m_Neighbours[m_foundNeighbour] = m_CurrentCell - m_WallX; //Increase the total of visited cells
+
+                m_foundNeighbour++;
+            }
+        }
+        for (int i = 0; i < m_foundNeighbour; i++)
+        {
+            Debug.Log(m_Neighbours[i]);
+
+        }
+
     }
 
 }
