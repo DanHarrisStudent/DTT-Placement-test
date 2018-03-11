@@ -8,13 +8,13 @@ public class MazeGen : MonoBehaviour
     public class Cells
     {
         public bool m_isVisited = false;
-        public GameObject m_North;
-        public GameObject m_East;
-        public GameObject m_West;
-        public GameObject m_South;
+        public GameObject m_North; //Wall 1
+        public GameObject m_East;  //Wall 2
+        public GameObject m_West;  //Wall 3
+        public GameObject m_South; //Wall 4
     }
 
-    //Variables for the Generation script
+    //Public veriables
     public GameObject Wall;
     public GameObject Floor;
     public int m_WallX = 5;
@@ -26,6 +26,13 @@ public class MazeGen : MonoBehaviour
     private GameObject WallHolder;//Creates a parent object to hold walls
     private Cells[] m_Cells;//refernce to the MazeCell class
     private int m_TotalCells;
+    private int m_CellsVisited = 0;
+    private bool m_StartedBuild = false;
+    private int m_CurrentNeighbour = 0;
+    private List<int> m_LastCell;
+    private int m_BackUp = 0;
+    private int m_BreakableWall = 0;
+
 
     void Start()
     {
@@ -66,6 +73,10 @@ public class MazeGen : MonoBehaviour
 
     void InitialiseCells()
     {
+        m_LastCell = new List<int>(); //Instatiate List of cells'
+        m_LastCell.Clear();
+
+        m_TotalCells = m_WallX * m_WallY;
         GameObject[] mazeWalls;//Array of walls within the maze.
         int m_wallChildren = WallHolder.transform.childCount;//Counts the number of child objects within WallHolder.
         mazeWalls = new GameObject[m_wallChildren];//Assigning Gameobject mazeWall the length of wallChildren.
@@ -104,36 +115,75 @@ public class MazeGen : MonoBehaviour
 
     void InstatiateMaze()
     {
-        FindCell();
+        if (m_CellsVisited < m_TotalCells)
+        {
+            if (m_StartedBuild)
+            {
+                FindCell();
+                if(m_Cells[m_CurrentNeighbour].m_isVisited == false && m_Cells[m_CurrentCell].m_isVisited == true)
+                {
+                    DestroyWall();
+                    m_Cells[m_CurrentNeighbour].m_isVisited = true;
+                    m_CellsVisited++;
+                    m_LastCell.Add(m_CurrentCell);
+                    m_CurrentCell = m_CurrentNeighbour;
+                    if(m_LastCell.Count > 0)
+                    {
+                        m_BackUp = m_LastCell.Count - 1; //Top value of the Cell stack.
+                    }
+                }
+            }
+            else //If there is no starting cell
+            {
+                m_CurrentCell = Random.Range(0, m_TotalCells);//Pick a starting cell
+                m_Cells[m_CurrentCell].m_isVisited = true; //Assing the current cell to visited
+                m_CellsVisited++; //Increment visited cells
+                m_StartedBuild = true; //Update Started bool to true
+            }
+            Invoke("InstatiateMaze", 0.0f);
+        }
     }
+
+    void DestroyWall()
+    {
+        switch (m_BreakableWall)
+        {
+            case 1 : Destroy(m_Cells[m_CurrentCell].m_North); break; //Destroy north wall then breaks switch statement
+            case 2 : Destroy(m_Cells[m_CurrentCell].m_East); break; //Destroy east wall then breaks switch statement
+            case 3 : Destroy(m_Cells[m_CurrentCell].m_West); break; //Destroy west wall then breaks switch statement
+            case 4 : Destroy(m_Cells[m_CurrentCell].m_South); break; //Destroy south wall then breaks switch statement
+
+        }
+    }
+
     void FindCell()
     {
-        m_TotalCells = m_WallX * m_WallY;
         int m_foundNeighbour = 0;
         int[] m_Neighbours = new int[4];//Cell only has 4 directions (N,E,S,W).
         int m_Check = 0;
+        int[] m_ConnectedWall = new int[4];//Connecting walls to the cell
         m_Check = ((m_CurrentCell + 1) / m_WallX);//Checking if the cell is in a corner
         m_Check -= 1;
         m_Check *= m_WallX;
         m_Check += m_WallX;
 
-        //If Cell is on the west
-        if (m_CurrentCell + 1 < m_TotalCells && (m_CurrentCell+1) != m_Check)
+        //If Cell is on the west side
+        if (m_CurrentCell + 1 < m_TotalCells && (m_CurrentCell + 1) != m_Check)
         {
-            if(m_Cells[m_CurrentCell +1].m_isVisited == false)//Checking if the cell has not been visited 
+            if(m_Cells[m_CurrentCell + 1].m_isVisited == false)//Checking if the cell has not been visited 
             {
                 m_Neighbours[m_foundNeighbour] = m_CurrentCell + 1; //Increase the total of visited cells
-
+                m_ConnectedWall[m_foundNeighbour] = 3;
                 m_foundNeighbour++;
             }
         }
-        //East Side
+        //East side
         if (m_CurrentCell - 1 >= 0 && m_CurrentCell != m_Check)
         {
             if (m_Cells[m_CurrentCell - 1].m_isVisited == false)//Checking if the cell has not been visited 
             {
-                m_Neighbours[m_foundNeighbour] = m_CurrentCell - 1; //Increase the total of visited cells
-
+                m_Neighbours[m_foundNeighbour] = m_CurrentCell - 1;
+                m_ConnectedWall[m_foundNeighbour] = 2;
                 m_foundNeighbour++;
             }
         }
@@ -143,24 +193,33 @@ public class MazeGen : MonoBehaviour
             if (m_Cells[m_CurrentCell + m_WallX].m_isVisited == false)//Checking if the cell has not been visited 
             {
                 m_Neighbours[m_foundNeighbour] = m_CurrentCell + m_WallX; //Increase the total of visited cells
-
+                m_ConnectedWall[m_foundNeighbour] = 1;
                 m_foundNeighbour++;
             }
         }
-
+        //South side
         if (m_CurrentCell - m_WallX >= 0)
         {
             if (m_Cells[m_CurrentCell - m_WallX].m_isVisited == false)//Checking if the cell has not been visited 
             {
                 m_Neighbours[m_foundNeighbour] = m_CurrentCell - m_WallX; //Increase the total of visited cells
-
+                m_ConnectedWall[m_foundNeighbour] = 4;
                 m_foundNeighbour++;
             }
         }
-        for (int i = 0; i < m_foundNeighbour; i++)
+        if (m_foundNeighbour != 0)
         {
-            Debug.Log(m_Neighbours[i]);
-
+            int m_StartingCell = Random.Range(0, m_foundNeighbour);
+            m_CurrentNeighbour = m_Neighbours[m_StartingCell];
+            m_BreakableWall = m_ConnectedWall[m_StartingCell];
+        }
+        else
+        {
+            if (m_BackUp > 0)
+            {
+                m_CurrentCell = m_LastCell[m_BackUp];
+                m_BackUp--;
+            }
         }
 
     }
