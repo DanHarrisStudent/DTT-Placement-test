@@ -170,7 +170,7 @@ public class MazeGen : MonoBehaviour
         //If Cell is on the west side
         if (m_CurrentCell + 1 < m_TotalCells && (m_CurrentCell + 1) != m_Check)
         {
-            if(m_Cells[m_CurrentCell + 1].m_isVisited == false)//Checking if the cell has not been visited 
+            if (m_Cells[m_CurrentCell + 1].m_isVisited == false)//Checking if the cell has not been visited 
             {
                 m_Neighbours[m_foundNeighbour] = m_CurrentCell + 1; //Increase the total of visited cells
                 m_ConnectedWall[m_foundNeighbour] = 3;
@@ -187,6 +187,7 @@ public class MazeGen : MonoBehaviour
                 m_foundNeighbour++;
             }
         }
+
         //North side
         if (m_CurrentCell + m_WallX < m_TotalCells)
         {
@@ -207,6 +208,7 @@ public class MazeGen : MonoBehaviour
                 m_foundNeighbour++;
             }
         }
+ 
         if (m_foundNeighbour != 0)
         {
             int m_StartingCell = Random.Range(0, m_foundNeighbour);
