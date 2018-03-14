@@ -209,8 +209,8 @@ MonoBehaviour:
   Floor: {fileID: 1004935019426216, guid: b82e0910642da374599eb7d623297eef, type: 2}
   m_WallX: 5
   m_WallY: 5
-  m_WallLength: 1
   m_CurrentCell: 0
+  m_WallLength: 1
 --- !u!4 &585463011
 Transform:
   m_ObjectHideFlags: 0

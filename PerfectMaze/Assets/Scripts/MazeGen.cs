@@ -25,8 +25,8 @@ public class MazeGen : MonoBehaviour
     public GameObject Floor;
     public int m_WallX = 5;
     public int m_WallY = 5;
-    public float m_WallLength = 1.0f;   //Length of the cube's Z axis.
     public int m_CurrentCell = 0;
+    public float m_WallLength = 1.0f;   //Length of the cube's Z axis.
 
     //Private variables 
     private Vector3 m_StartPosition;
@@ -34,8 +34,8 @@ public class MazeGen : MonoBehaviour
     private Cells[] m_Cells;            //refernce to the MazeCell class.
     private List<int> m_LastCell;
     private int m_TotalCells;
-    private int m_CellsVisited = 0;
-    private int m_CurrentNeighbour = 0;
+    private int m_CellsVisited = 0;     //Number of cells visited by the system
+    private int m_CurrentNeighbour = 0; //Interger for the current neighbour
     private int m_BackUp = 0;
     private int m_BreakableWall = 0;
     private bool m_StartedBuild = false;
@@ -49,27 +49,35 @@ public class MazeGen : MonoBehaviour
     //Method generates walls in order of rows then columns
     private void GenMaze()
     {
-        Instantiate(Floor); //Produces a ground plane
+        Instantiate(Floor);             //Produces a ground plane
 
         WallHolder = new GameObject();
-        WallHolder.name = "Grid"; //Used to keep the hierarchy clean andd hold all wall objects
+        WallHolder.name = "Grid";       //Used to keep the hierarchy clean andd hold all wall objects
 
         m_StartPosition = new Vector3((-m_WallX / 2) + m_WallLength / 2, 0.0f, (-m_WallY / 2) + m_WallLength / 2);//Assigns bottom right of the origin point as start point
         Vector3 m_CellPos = m_StartPosition;//Assigns the vector position of the start point to the cell position 
-        GameObject tempWall; //provides a temporary wall gameobject
+        GameObject tempWall;            //provides a temporary wall gameobject
 
         //Walls for X Axis / rows
         for (int i = 0; i < m_WallY; i++)//for less than the length of column variable
         {
-            for (int j = 0; j <= m_WallX; j++)//for each wall of the row variable
+            for (int j = 0; j < m_WallX + 1; j++)//for each wall of the row variable
             {
                 m_CellPos = new Vector3(m_StartPosition.x + (j * m_WallLength) - m_WallLength / 2, 0.0f, m_StartPosition.z + (i * m_WallLength) - m_WallLength / 2); //Obtain as a new vector, the position of the starting cell and increment it by 1 to produce the walls.
                 tempWall = Instantiate(Wall, m_CellPos, Quaternion.identity) as GameObject;//Spawn game object at cellPosition and Spawns the object with the original orientation
+                if (j == 0)
+                {
+                    tempWall.tag = "OuterWestWall";
+                }
+                else if (j == m_WallY)
+                {
+                    tempWall.tag = "OuterEastWall";
+                }
                 tempWall.transform.parent = WallHolder.transform;//Assigns the wall as a child of the holder game object
             }
         }
         //Walls for Y Axis / columns
-        for (int i = 0; i <= m_WallY; i++)//For each column (Y Axis)
+        for (int i = 0; i < m_WallY + 1; i++)//For each column (Y Axis)
         {
             for (int j = 0; j < m_WallX; j++)//for each row(X Axis)
             {
@@ -78,7 +86,7 @@ public class MazeGen : MonoBehaviour
                 tempWall.transform.parent = WallHolder.transform;//Assigns the wall as a child of the holder game object
             }
         }
-        InitialiseCells();//After walls have been created, intitate cell creation from assigning North, East, South and West walls.
+        InitialiseCells();                                      //After walls have been created, intitate cell creation from assigning North, East, South and West walls.
     }
 
     //Method assigns walls to a cell and which direction the wall is facing in comparison to the cell.
@@ -106,9 +114,9 @@ public class MazeGen : MonoBehaviour
         for (int i = 0; i < m_Cells.Length; i++)
         {
             m_Cells[i] = new Cells();                           //Sets each cell within the maze to a new cell with each wall GameObject.
-            m_Cells[i].m_East = mazeWalls[m_CellProcess];       //Assign each west wall to the cell
+            m_Cells[i].m_East = mazeWalls[m_CellProcess];       //Assign each east wall to the cell
             m_Cells[i].m_South = mazeWalls[m_HorizontalWalls + (m_WallX + 1) * m_WallY];//Gets the first south facing wall after all vertical walls.
-            if (m_CellCount == m_WallX)                         //last element on the Xaxis.
+            if (m_CellCount == m_WallX)                         //last element on the X axis.
             {
                 m_CellProcess += 2;                             //Skip a cell to make the edge wall.
                 m_CellCount = 0;                                //Resets the cell count to signify a new row.
@@ -116,65 +124,70 @@ public class MazeGen : MonoBehaviour
             m_CellCount++;                                      //Increment the cell count meaning we have not reached the end of the row.
             m_HorizontalWalls++;                                //Increments 
 
-            m_Cells[i].m_West = mazeWalls[m_CellProcess];//Assigns west wall
+            m_Cells[i].m_West = mazeWalls[m_CellProcess];       //Assigns west wall
             m_Cells[i].m_North = mazeWalls[(m_HorizontalWalls + (m_WallX + 1) * m_WallY) + m_WallX - 1];//Assigns north wall
 
         }
-        InstatiateMaze();
+        InstatiateMaze();                                       //Calls InstantiateMaze method
     }
 
-    //Method checks if the maze has been generated 
+    //Method checks if the maze has been generated + Uses a DFS to design the maze
     void InstatiateMaze()
     {
-        if (m_CellsVisited < m_TotalCells)
+        if (m_CellsVisited < m_TotalCells)                      //Checking that the created cells variable hasn't reach total cells
         {
-            if (m_StartedBuild)
+            if (m_StartedBuild)                                 //If the maze has started building
             {
                 FindCell();
-                if(m_Cells[m_CurrentNeighbour].m_isVisited == true && m_Cells[m_CurrentCell].m_isVisited == true)
+                if(m_Cells[m_CurrentNeighbour].m_isVisited == false && m_Cells[m_CurrentCell].m_isVisited == true) //Checking if the neighbour hasn't been visited but the current cell has
                 {
-                    m_Cells[m_CurrentNeighbour].m_isVisited = true;
-                    m_CellsVisited++;
+                    Debug.Log("Found Visited Cells");
+                    DestroyWall();                              //Calls Destroy method
+                    m_Cells[m_CurrentNeighbour].m_isVisited = true; //Setting the current neighbour to true
+                    m_CellsVisited++;                               //Increase Cells visited
                     m_LastCell.Add(m_CurrentCell);
                     m_CurrentCell = m_CurrentNeighbour;
-                    DestroyWall();
 
                     if (m_LastCell.Count > 0)
                     {
-                        m_BackUp = m_LastCell.Count - 1; //Top value of the Cell stack.
+                        m_BackUp = m_LastCell.Count - 1;         //Top value of the Cell stack.
                     }
                 }
             }
             else //If there is no starting cell
             {
-                m_CurrentCell = Random.Range(0, m_TotalCells);//Pick a starting cell
-                m_Cells[m_CurrentCell].m_isVisited = true; //Assing the current cell to visited
-                m_CellsVisited++; //Increment visited cells
-                m_StartedBuild = true; //Update Started bool to true
+                m_CurrentCell = Random.Range(0, m_TotalCells);  //Pick a starting cell at random
+                //move a gameobject to starting cell here.
+                //gameobject.transform.position = new Vector3(m_cells[m_CurrentCell].x, 0, m_cells[m_CurrentCell].z)
+                m_Cells[m_CurrentCell].m_isVisited = true;      //Assign the current cell to visited
+                m_CellsVisited++;                               //Increment visited cells
+                m_StartedBuild = true;                          //Update Started bool to true
             }
-            Invoke("InstatiateMaze", 0.0f);
+
+            Invoke("InstatiateMaze", 0f);                     //Activating the maze
         }
     }
 
     void DestroyWall()
     {
+        Debug.Log("Destroying Wall");
         switch (m_BreakableWall)
         {
-            case 1 : Destroy(m_Cells[m_CurrentCell].m_North); break; //Destroy north wall then breaks switch statement
-            case 2 : Destroy(m_Cells[m_CurrentCell].m_East); break; //Destroy east wall then breaks switch statement
-            case 3 : Destroy(m_Cells[m_CurrentCell].m_West); break; //Destroy west wall then breaks switch statement
-            case 4 : Destroy(m_Cells[m_CurrentCell].m_South); break; //Destroy south wall then breaks switch statement
+            //Checks that you're not destroying an edge wall
+            case 1 : Destroy(m_Cells[m_CurrentCell].m_North); break;    //Destroy north wall then breaks switch statement
+            case 2 : Destroy(m_Cells[m_CurrentCell].m_East); break;     //Destroy east wall then breaks switch statement
+            case 3 : Destroy(m_Cells[m_CurrentCell].m_West); break;     //Destroy west wall then breaks switch statement
+            case 4 : Destroy(m_Cells[m_CurrentCell].m_South); break;    //Destroy south wall then breaks switch statement
 
         }
     }
-
     void FindCell()
     {
         int m_foundNeighbour = 0;
-        int[] m_Neighbours = new int[4];//Cell only has 4 directions (N,E,S,W).
+        int[] m_Neighbours = new int[4];                //Cell only has 4 directions (N,E,S,W).
         int m_Check = 0;
-        int[] m_ConnectedWall = new int[4];//Connecting walls to the cell
-        m_Check = ((m_CurrentCell + 1) / m_WallX);//Checking if the cell is in a corner
+        int[] m_ConnectedWall = new int[4];             //Connecting walls to the cell
+        m_Check = ((m_CurrentCell + 1) / m_WallX);      //Checking if the cell is in a corner
         m_Check -= 1;
         m_Check *= m_WallX;
         m_Check += m_WallX;
@@ -185,7 +198,7 @@ public class MazeGen : MonoBehaviour
             if (m_Cells[m_CurrentCell + 1].m_isVisited == false)//Checking if the cell has not been visited 
             {
                 m_Neighbours[m_foundNeighbour] = m_CurrentCell + 1; //Increase the total of visited cells
-                m_ConnectedWall[m_foundNeighbour] = 3;
+                m_ConnectedWall[m_foundNeighbour] = 3;              //Assigning connecting wall West
                 m_foundNeighbour++;
             }
         }
@@ -223,8 +236,8 @@ public class MazeGen : MonoBehaviour
  
         if (m_foundNeighbour != 0)
         {
-            int m_StartingCell = Random.Range(0, m_foundNeighbour);
-            m_CurrentNeighbour = m_Neighbours[m_StartingCell];
+            int m_StartingCell = Random.Range(0, m_foundNeighbour);  //Givs the method a random neighbour
+            m_CurrentNeighbour = m_Neighbours[m_StartingCell];       //Assigns the current neighbour to the new starting neighbour
             m_BreakableWall = m_ConnectedWall[m_StartingCell];
         }
         else
