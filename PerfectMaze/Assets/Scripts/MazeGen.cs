@@ -61,7 +61,7 @@ public class MazeGen : MonoBehaviour
         //Walls for X Axis / rows
         for (int i = 0; i < m_WallY; i++)//for less than the length of column variable
         {
-            for (int j = 0; j < m_WallX + 1; j++)//for each wall of the row variable
+            for (int j = 0; j <= m_WallX; j++)//for each wall of the row variable
             {
                 m_CellPos = new Vector3(m_StartPosition.x + (j * m_WallLength) - m_WallLength / 2, 0.0f, m_StartPosition.z + (i * m_WallLength) - m_WallLength / 2); //Obtain as a new vector, the position of the starting cell and increment it by 1 to produce the walls.
                 tempWall = Instantiate(Wall, m_CellPos, Quaternion.identity) as GameObject;//Spawn game object at cellPosition and Spawns the object with the original orientation
@@ -77,7 +77,7 @@ public class MazeGen : MonoBehaviour
             }
         }
         //Walls for Y Axis / columns
-        for (int i = 0; i < m_WallY + 1; i++)//For each column (Y Axis)
+        for (int i = 0; i <= m_WallY; i++)//For each column (Y Axis)
         {
             for (int j = 0; j < m_WallX; j++)//for each row(X Axis)
             {
@@ -164,7 +164,7 @@ public class MazeGen : MonoBehaviour
                 m_StartedBuild = true;                          //Update Started bool to true
             }
 
-            Invoke("InstatiateMaze", 0f);                     //Activating the maze
+            Invoke("InstatiateMaze", 0.5f);                     //Activating the maze
         }
     }
 
@@ -191,6 +191,10 @@ public class MazeGen : MonoBehaviour
         m_Check -= 1;
         m_Check *= m_WallX;
         m_Check += m_WallX;
+
+        //x + y * width = i
+        //y = (i - x)/width
+        //x = i - y*width
 
         //If Cell is on the west side
         if (m_CurrentCell + 1 < m_TotalCells && (m_CurrentCell + 1) != m_Check)
