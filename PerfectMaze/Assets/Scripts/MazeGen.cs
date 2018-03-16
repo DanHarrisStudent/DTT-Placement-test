@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MazeGen : MonoBehaviour
 {
@@ -21,6 +22,8 @@ public class MazeGen : MonoBehaviour
     }
 
     //Public variables
+    public InputField GetWidth;          //GetWidth from UI
+    public InputField GetLength;         //GetLength from UI
     public GameObject Wall;
     public GameObject Floor;
     public int m_WallX = 5;
@@ -40,12 +43,24 @@ public class MazeGen : MonoBehaviour
     private int m_BreakableWall = 0;
     private bool m_StartedBuild = false;
 
-    //Start function to generate the maze
-    void Start()
-    {
-        GenMaze();
-    }
 
+    public void ApplySize()
+    {
+
+        Destroy(WallHolder);                    //Destroys wall holder to clean the scene
+
+        m_WallX = int.Parse(GetWidth.text);             //Assigns wallWidth with user input
+        m_WallY = int.Parse(GetLength.text);           //Assigns wallLength with user input
+
+        GenMaze();
+        FindCell();
+
+    }
+    public void QuitApplication()
+    {
+        Debug.Log("Application Quit");
+        Application.Quit();
+    }
     //Method generates walls in order of rows then columns
     private void GenMaze()
     {
@@ -70,6 +85,7 @@ public class MazeGen : MonoBehaviour
                     tempWall.tag = "OuterWestWall";
                 }
                 else if (j == m_WallY)
+
                 {
                     tempWall.tag = "OuterEastWall";
                 }
@@ -164,7 +180,7 @@ public class MazeGen : MonoBehaviour
                 m_StartedBuild = true;                          //Update Started bool to true
             }
 
-            Invoke("InstatiateMaze", 0.5f);                     //Activating the maze
+            Invoke("InstatiateMaze", 0.0f);                     //Activating the maze
         }
     }
 
